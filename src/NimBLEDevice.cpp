@@ -23,7 +23,6 @@
 #  include "esp_bt.h"
 #  include "nvs_flash.h"
 #  if defined(CONFIG_NIMBLE_CPP_IDF)
-#    include "esp_nimble_hci.h"
 #    include "nimble/nimble_port.h"
 #    include "nimble/nimble_port_freertos.h"
 #    include "host/ble_hs.h"
@@ -31,8 +30,6 @@
 #    include "host/util/util.h"
 #    include "services/gap/ble_svc_gap.h"
 #    include "services/gatt/ble_svc_gatt.h"
-#  else
-#    include "nimble/esp_port/esp-hci/include/esp_nimble_hci.h"
 #  endif
 #else
 #  include "nimble/nimble/controller/include/controller/ble_phy.h"
@@ -886,7 +883,6 @@ void NimBLEDevice::init(const std::string &deviceName) {
 #  endif
         ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
         ESP_ERROR_CHECK(esp_bt_controller_enable(ESP_BT_MODE_BLE));
-        ESP_ERROR_CHECK(esp_nimble_hci_init());
 #  endif
 #endif
         nimble_port_init();
@@ -933,14 +929,6 @@ void NimBLEDevice::deinit(bool clearAll) {
     int ret = nimble_port_stop();
     if (ret == 0) {
         nimble_port_deinit();
-#ifdef ESP_PLATFORM
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
-        ret = esp_nimble_hci_and_controller_deinit();
-        if (ret != ESP_OK) {
-            NIMBLE_LOGE(LOG_TAG, "esp_nimble_hci_and_controller_deinit() failed with error: %d", ret);
-        }
-#endif
-#endif
         initialized = false;
         m_synced = false;
 
